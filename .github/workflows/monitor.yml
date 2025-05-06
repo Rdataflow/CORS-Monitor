@@ -26,7 +26,7 @@ jobs:
           for i in `cat endpoints.txt | sed -e 's/\(\?\|$\)\(.*\)/\?\2\&REQUEST=GetCapabilities\&SERVICE=WMS\&VERSION=1.3.0\&FORMAT=text%2Fxml/'`
           do 
             echo -n testing $i ... | tee -a output/index.html
-            curl -s -L -H 'Origin: example.org' $i -v 2>&1 > query.log
+            curl -s -L -H 'Origin: example.org' $i -v 2>&1>& query.log
             grep -i -e '^< access-control-allow-origin: \(\*\|example.org\)' query.log > /dev/null && \
             echo $i >> output/result_cors.txt && echo -n ✅ | tee -a output/index.html || echo -n ❌ | tee -a output/index.html
             grep -i -e 'EPSG:3857' query.log > /dev/null && \
