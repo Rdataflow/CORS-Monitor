@@ -1,4 +1,4 @@
-name: Cube Monitor
+name: WMS Monitor
 
 on:
   workflow_dispatch:
@@ -16,12 +16,26 @@ jobs:
       - name: Get list of Endpoints 📍
         run: |
           until `[ -s endpoints.txt ]` ; do curl -s -L https://github.com/geoadmin/web-mapviewer/raw/refs/heads/develop/packages/mapviewer/src/modules/menu/components/advancedTools/ImportCatalogue/external-providers.json | jq -r '.[]' | grep -v -i 'wmts'  > endpoints.txt || sleep 2 ; done
-      - name: Check WMS CORS support 🔎
+      - name: Check WMS support for CORS & EPSG:38657 🔎
         run: |
           mkdir -p output
-          echo '<h1>WMS endpoints supporting CORS</h1><p><a href="result.txt">raw results<a></p><pre>' > output/index.html
-          for i in `cat endpoints.txt | sed -e 's/\(\?\|$\)\(.*\)/\?\2\&REQUEST=GetCapabilities\&SERVICE=WMS\&VERSION=1.3.0\&FORMAT=text%2Fxml/'` ; do echo -n testing $i ... | tee -a output/index.html ; curl -s -L -H 'Origin: example.org' $i -v 2>&1 | grep -i -e '^< access-control-allow-origin: \(\*\|example.org\)' > /dev/null && echo $i >> output/result.txt && echo ✅ | tee -a output/index.html || echo ❌ | tee -a output/index.html ; done
-          cat output/result.txt
+          echo '<h1>WMS endpoints supporting CORS and EPSG:3857</h1>' >> output/index.html
+          echo '<p><a href="result_cors.txt">raw CORS results<a></p>' >> output/index.html
+          echo '<p><a href="result_epsg3857.txt">raw EPSG:3857 results<a></p>' >> output/index.html
+          echo '<pre>' >> output/index.html
+          for i in `cat endpoints.txt | sed -e 's/\(\?\|$\)\(.*\)/\?\2\&REQUEST=GetCapabilities\&SERVICE=WMS\&VERSION=1.3.0\&FORMAT=text%2Fxml/'`
+          do 
+            echo -n testing $i ... | tee -a output/index.html
+            curl -s -L -H 'Origin: example.org' $i -v 2>&1 > query.log
+            grep -i -e '^< access-control-allow-origin: \(\*\|example.org\)' query.log > /dev/null && \
+            echo $i >> output/result_cors.txt && echo -n ✅ | tee -a output/index.html || echo -n ❌ | tee -a output/index.html
+            grep -i -e 'EPSG:3857' query.log > /dev/null && \
+            echo $i >> output/result_epsg3857.txt && echo ✅ | tee -a output/index.html || echo ❌ | tee -a output/index.html
+          done
+          echo === cors ===
+          cat output/result_cors.txt
+          echo === epsg:3857 ===
+          cat output/result_epsg3857.txt
       - name: Upload Pages artifact
         id: upload
         uses: actions/upload-pages-artifact@v3
