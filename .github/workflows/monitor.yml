@@ -22,9 +22,9 @@ jobs:
         run: |
           mkdir -p output
           echo '<h1>WMTS & WMS endpoints supporting CORS and EPSG:3857</h1>' >> output/index.html
-          echo '<p><a href="result_cors.txt">raw CORS results<a></p>' >> output/index.html
-          echo '<p><a href="result_epsg3857.txt">raw EPSG:3857 results<a></p>' >> output/index.html
-          echo '<p><a href="result.txt">raw combined results<a></p>' >> output/index.html
+          echo '<p><a href="result_cors.json">raw CORS results<a></p>' >> output/index.html
+          echo '<p><a href="result_epsg3857.json">raw EPSG:3857 results<a></p>' >> output/index.html
+          echo '<p><a href="result.json">raw combined results<a></p>' >> output/index.html
           echo '<pre>' >> output/index.html
           for i in `cat endpoints.txt | grep -i 'wmts'`
           do
