@@ -20,35 +20,35 @@ jobs:
         env:
           ORIGIN: ${{ vars.ORIGIN }}
         run: |
-          check_endpoint () {
-            # checks WMTS and WMS endpoint for CORS and EPSG:3857
-            url=$1
-            i=$2
-            VALID=0
-            echo -n testing $i ... | tee -a output/index.html
-            curl -s -L -H "Origin: https://$ORIGIN" $url -v 2>&1>& query.log
-            grep -i -e "^< access-control-allow-origin: \(\*\|.*$ORIGIN\)" query.log > /dev/null && \
-            VALID=$(($VALID+1)) && echo $i >> output/result_cors.txt && echo -n ✅ | tee -a output/index.html || echo -n ❌ | tee -a output/index.html
-            grep -e 'EPSG:\(.*:\)\?\(3857\)' query.log > /dev/null && \
-            VALID=$(($VALID+1)) && echo $i >> output/result_epsg3857.txt && echo ✅ | tee -a output/index.html || echo ❌ | tee -a output/index.html
-            [ $VALID -eq 2 ] && echo $i >> output/result.txt
-          }
-          
           mkdir -p output
           echo '<h1>WMTS & WMS endpoints supporting CORS and EPSG:3857</h1>' >> output/index.html
-          echo '<p><a href="result_cors.json">raw CORS results<a></p>' >> output/index.html
-          echo '<p><a href="result_epsg3857.json">raw EPSG:3857 results<a></p>' >> output/index.html
-          echo '<p><a href="result.json">raw combined results<a></p>' >> output/index.html
+          echo '<p><a href="result_cors.txt">raw CORS results<a></p>' >> output/index.html
+          echo '<p><a href="result_epsg3857.txt">raw EPSG:3857 results<a></p>' >> output/index.html
+          echo '<p><a href="result.txt">raw combined results<a></p>' >> output/index.html
           echo '<pre>' >> output/index.html
           for i in `cat endpoints.txt | grep -i 'wmts'`
           do
+            echo -n testing $i ... | tee -a output/index.html
             url=`echo $i | sed -e 's/\(\?.*\)/\1\&REQUEST=GetCapabilities\&SERVICE=WMTS/'`
-            check_endpoint "$url" "$i"
+            VALID=0
+            curl -s -L -H 'Origin: $ORIGIN' $url -v 2>&1>& query.log
+            grep -i -e '^< access-control-allow-origin: \(\*\|.*$ORIGIN\)' query.log > /dev/null && \
+            VALID=$(($VALID+1)) && echo $i >> output/result_cors.txt && echo -n ✅ | tee -a output/index.html || echo -n ❌ | tee -a output/index.html
+            grep -e 'EPSG:\(.*:\)\?\(3857\)</' query.log > /dev/null && \
+            VALID=$(($VALID+1)) && echo $i >> output/result_epsg3857.txt && echo ✅ | tee -a output/index.html || echo ❌ | tee -a output/index.html
+            [ $VALID -eq 2 ] && echo $i >> output/result.txt
           done
           for i in `cat endpoints.txt | grep -v -i 'wmts'`
           do 
+            echo -n testing $i ... | tee -a output/index.html
             url=`echo $i | sed -e 's/\(\?\|$\)\(.*\)/\?\2\&REQUEST=GetCapabilities\&SERVICE=WMS\&VERSION=1.3.0\&FORMAT=text%2Fxml/'`
-            check_endpoint "$url" "$i"
+            VALID=0
+            curl -s -L -H 'Origin: https://$ORIGIN' $url -v 2>&1>& query.log
+            grep -i -e '^< access-control-allow-origin: \(\*\|.*$ORIGIN\)' query.log > /dev/null && \
+            VALID=$(($VALID+1)) && echo $i >> output/result_cors.txt && echo -n ✅ | tee -a output/index.html || echo -n ❌ | tee -a output/index.html
+            grep -i -e 'EPSG:3857' query.log > /dev/null && \
+            VALID=$(($VALID+1)) && echo $i >> output/result_epsg3857.txt && echo ✅ | tee -a output/index.html || echo ❌ | tee -a output/index.html
+            [ $VALID -eq 2 ] && echo $i >> output/result.txt
           done
           cat output/result_cors.txt | jq -R | jq -s > output/result_cors.json
           cat output/result_epsg3857.txt | jq -R | jq -s > output/result_epsg3857.json
