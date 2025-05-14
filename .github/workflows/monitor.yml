@@ -43,7 +43,7 @@ jobs:
           for i in `cat endpoints.txt | grep -i 'wmts'`
           do
             url=`echo $i | sed -e 's/\(\?.*\)/\1\&REQUEST=GetCapabilities\&SERVICE=WMTS/'`
-            check_endpoint $url $i
+            check_endpoint "$url" "$i"
           done
           for i in `cat endpoints.txt | grep -v -i 'wmts'`
           do 
