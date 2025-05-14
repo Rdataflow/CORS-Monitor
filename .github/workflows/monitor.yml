@@ -32,7 +32,7 @@ jobs:
             url=`echo $i | sed -e 's/\(\?.*\)/\1\&REQUEST=GetCapabilities\&SERVICE=WMTS/'`
             VALID=0
             curl -s -L -H 'Origin: $ORIGIN' $url -v 2>&1>& query.log
-            grep -i -e '^< access-control-allow-origin: \(\*\|$ORIGIN\)' query.log > /dev/null && \
+            grep -i -e '^< access-control-allow-origin: \(\*\|.*$ORIGIN\)' query.log > /dev/null && \
             VALID=$(($VALID+1)) && echo $i >> output/result_cors.txt && echo -n ✅ | tee -a output/index.html || echo -n ❌ | tee -a output/index.html
             grep -e 'EPSG:\(.*:\)\?\(3857\)</' query.log > /dev/null && \
             VALID=$(($VALID+1)) && echo $i >> output/result_epsg3857.txt && echo ✅ | tee -a output/index.html || echo ❌ | tee -a output/index.html
