@@ -29,7 +29,7 @@ jobs:
             echo -n testing $i ... | tee -a output/index.html
             url=`echo $i | sed -e 's/\(\?\|$\)\(.*\)/\?\2\&REQUEST=GetCapabilities\&SERVICE=WMS\&VERSION=1.3.0\&FORMAT=text%2Fxml/'`
             VALID=0
-            curl -s -L -H 'Origin: example.org' $url -v 2>&1>& query.log
+            curl -s -L -H 'Origin: https://example.org' $url -v 2>&1>& query.log
             grep -i -e '^< access-control-allow-origin: \(\*\|example.org\)' query.log > /dev/null && \
             VALID=$(($VALID+1)) && echo $i >> output/result_cors.txt && echo -n ✅ | tee -a output/index.html || echo -n ❌ | tee -a output/index.html
             grep -i -e 'EPSG:3857' query.log > /dev/null && \
