@@ -50,7 +50,7 @@ jobs:
             curl -s -L -H "Origin: https://$ORIGIN" $url -v 2>&1>& query.log
             grep -i -e "^< access-control-allow-origin: \(\*\|.*$ORIGIN\)" query.log > /dev/null && \
             VALID=$(($VALID+1)) && echo $i >> output/result_cors.txt && echo -n ✅ | tee -a output/index.html || echo -n ❌ | tee -a output/index.html
-            grep -i -e 'EPSG:3857' query.log > /dev/null && \
+            grep -e 'EPSG:\(.*:\)\?\(3857\)</' query.log > /dev/null && \
             VALID=$(($VALID+1)) && echo $i >> output/result_epsg3857.txt && echo ✅ | tee -a output/index.html || echo ❌ | tee -a output/index.html
             [ $VALID -eq 2 ] && echo $i >> output/result.txt
           done
