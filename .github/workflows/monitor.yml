@@ -29,7 +29,7 @@ jobs:
           echo '<pre>' >> output/index.html
           for i in `cat endpoints.txt | grep -i '\(wmts\)\|\(capabilities\.xml\)'`
           do
-            echo -n testing $i ... | tee -a output/index.html
+            echo -n "$i ... " | tee -a output/index.html
             url=`echo $i | sed -e 's/\(\?.*\)/\1\&REQUEST=GetCapabilities\&SERVICE=WMTS/'`
             VALID=0
             curl -s -L -H "Origin: https://$ORIGIN" $url -v 2>&1>& query.log
