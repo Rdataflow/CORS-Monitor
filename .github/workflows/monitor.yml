@@ -29,7 +29,7 @@ jobs:
           echo '<pre>' >> output/index.html
           for i in `cat endpoints.txt | grep -i '\(wmts\)\|\(capabilities\.xml\)'`
           do
-            echo -n "$i ... " | tee -a output/index.html
+            echo -n $i | tee -a output/index.html
             url=`echo $i | sed -e 's/\(\?.*\)/\1\&REQUEST=GetCapabilities\&SERVICE=WMTS/'`
             VALID=0
             curl -s -L -H "Origin: https://$ORIGIN" $url -v 2>&1>& query.log
@@ -44,7 +44,7 @@ jobs:
           echo '<pre>' >> output/index.html
           for i in `cat endpoints.txt | grep -v -i '\(wmts\)\|\(capabilities\.xml\)'`
           do 
-            echo -n "$i ... " | tee -a output/index.html
+            echo -n $i | tee -a output/index.html
             url=`echo $i | sed -e 's/\(\?\|$\)\(.*\)/\?\2\&REQUEST=GetCapabilities\&SERVICE=WMS\&VERSION=1.3.0\&FORMAT=text%2Fxml/'`
             VALID=0
             curl -s -L -H "Origin: https://$ORIGIN" $url -v 2>&1>& query.log
